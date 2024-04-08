@@ -132,3 +132,134 @@ app.post("/formdata", (req, res) => {
 ```
 
 /formdata রাউটে express.urlencoded() মিডলওয়্যার ব্যবহার করা হয় যেখানে ফর্ম ডেটা পার্স করা হয়।
+
+## Application
+
+### app.all()
+
+যদি আপনি চান যে কোনো একটি রাউটে যেই কোনো মেথডেই কল করা হোক না কেন পেজ বা ডাটা দেখাবে তখন app.all ব্যবহার করা হয়।
+
+#### Example:
+
+```js
+app.all("/universel", (req, res) => {
+  console.log("This is universel page");
+});
+```
+
+### app.enable() & app.disable()
+
+কোনো সিস্টেম কে ইনেবল বা ডিজেবল করার জন্য এই মেথড গুলো ব্যবহার করা হয়।
+
+#### Example:
+
+```js
+app.enable(case sensitive routing);
+app.disable(case sensitive routing);
+```
+
+### app.get(path, callback)
+
+কোনো পেজ বা ডাটা পেতে চাইলে এই মেথড ব্যবহার করা হয়।
+
+#### Example:
+
+```js
+app.get("/", (req, res) => {
+  console.log("This is home page");
+});
+```
+
+### app.set(name, data)
+
+যদি কোনো ডাটা সেট করতে হয় তাহলে সেট(set) মেথড ব্যবহার করা হয়।
+
+#### Example
+
+```javascript
+app.set("title", "My Sites");
+```
+
+### app.get(name)
+
+যদি কোনো ডাটা সেট করা হয় এবং সেট করা ডাটা পেতে চাইলে গেট(get) মেথড ব্যবহার করা হয়।
+
+#### Example
+
+```javascript
+app.set("title", "My Sites");
+app.set("title");
+```
+
+### app.param()
+
+app.param() একটি Express.js মেথড যা একটি রিকুয়েস্টের মধ্যে প্যারামিটারের মানকে পরিচালনা করে। এটি দ্বারা রিকুয়েস্টের প্যারামিটার মান প্রকাশের পূর্বে রিকুয়েস্ট অবজেক্টে নির্ধারিত মধ্যবর্তী মিডলওয়্যার ফাংশনগুলি অনুসরণ করে। এটি সাধারণত রুট প্যারামিটার প্রস্তুত এবং রিকুয়েস্ট অবজেক্টে অ্যাট্যাচ করার জন্য ব্যবহৃত হয়।
+
+#### Example
+
+```javascript
+app.param("id", (req, res, next, name) => {
+  console.log("Name parameter:", name);
+  req.userDetails = name;
+
+  next();
+});
+
+// আইডি প্যারামিটার ব্যবহার করা হয়
+app.get("/users/:id", (req, res) => {
+  // userDetails টা আমরা এখান থেকে পেতে পারি।
+  console.log(req.userDetails);
+  res.send("User: " + req.params.name);
+});
+```
+
+### app.route()
+
+app.route() মেথডটি একটি ব্যবহারিক উপায় যাতে আপনি একই পাথের বিভিন্ন HTTP মেথড রিকুয়েস্টের জন্য একই হ্যান্ডলার ফাংশন ব্যবহার করতে পারেন। এটি কোড লেখার সাথে সাথে কোড ক্লিয়ারিটি বাড়াতে সাহায্য করে এবং একই পাথের বিভিন্ন মেথডগুলির হ্যান্ডলিং সহজ করে তোলে।
+
+```js
+// app.route() মেথড ব্যবহার করে একই পাথের বিভিন্ন HTTP মেথডের হ্যান্ডলার ফাংশন ব্যবহার করা
+app
+  .route("/books")
+  .get((req, res) => {
+    res.send("Get all books");
+  })
+  .post((req, res) => {
+    res.send("Create a new book");
+  })
+  .put((req, res) => {
+    res.send("Update all books");
+  })
+  .delete((req, res) => {
+    res.send("Delete all books");
+  });
+```
+
+### app.engine()
+
+app.engine() method in Express.js, which is used to set up template engines for rendering dynamic content. Template engines allow you to use static template files in your application and inject dynamic data into them.
+
+One popular template engine used with Express.js is EJS (Embedded JavaScript).
+
+```
+npm i ejs
+```
+
+OR
+
+```
+yarn add ejs
+```
+
+```js
+app.set("view engine", "ejs");
+
+// Define a route to render an EJS template
+app.get("/", (req, res) => {
+  const data = {
+    title: "Welcome to my Express App!",
+    message: "This is a dynamic message rendered using EJS.",
+  };
+  res.render("index", data); // Renders the 'index.ejs' template with the provided data
+});
+```
