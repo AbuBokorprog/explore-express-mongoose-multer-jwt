@@ -2,18 +2,21 @@ const express = require("express");
 const app = express();
 const port = 5000;
 
-app.use(express.json());
+// app.use((req, res, next) => {
+//   throw new Error("This is a Test error");
+// });
 
-app.set("view engine", "ejs");
+// // Error handling middleware
+// app.use((err, req, res, next) => {
+//   console.error(err.message);
+//   res.status(500).send("Error: " + err.message);
+// });
 
-// Define a route to render an EJS template
+// Route
 app.get("/", (req, res) => {
-  const data = {
-    title: "Welcome to my Express App!",
-    message: "This is a dynamic message rendered using EJS.",
-  };
-  res.render("pages/home", data); // Renders the 'index.ejs' template with the provided data
+  res.send("This is home page get method");
 });
+
 app.post("/", (req, res) => {
   console.log(req.body);
   res.send("Home page post request");

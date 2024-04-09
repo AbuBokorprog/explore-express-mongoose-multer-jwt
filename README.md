@@ -263,3 +263,132 @@ app.get("/", (req, res) => {
   res.render("index", data); // Renders the 'index.ejs' template with the provided data
 });
 ```
+
+### EJS
+
+creating EJS app template
+
+```
+express --view=ejs myapp
+```
+
+## Request()
+
+The req object represents the HTTP request
+Known as req
+
+## Response
+
+The res object represents the HTTP response
+Known as res
+
+## Middleware
+
+Middleware is a simple function that have accepts to req res object and next function.
+
+### What middleware can do:
+
+- execute any code
+- can change the req and res object
+- can end req/res cycle
+- call nest middleware by next()
+- throw & catch errors
+
+### Type of middleware
+
+- Application level middleware
+- Router level middleware
+- Error handling middleware
+- built-in middleware
+- third party middleware
+- Configurable middleware
+
+#### Application level middleware
+
+These middleware functions are bound to the app object using app.use() or similar methods. They are executed for every request to the server.
+
+```js
+// Logger middleware
+app.use((req, res, next) => {
+  console.log(
+    `${req.method} - ${req.originalUrl} - ${new Date(
+      Date.now()
+    ).toLocalString()}`
+  );
+  next();
+});
+
+// Route
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+```
+
+#### Router level middleware
+
+These middleware functions are bound to an instance of express.Router(). They are similar to application-level middleware but are bound to specific routes.
+
+```js
+const adminRouter = express.Router();
+
+// Logger middleware for the router
+adminRouter.use((req, res, next) => {
+  console.log(`Router middleware: ${req.method} ${req.url}`);
+  next();
+});
+// You can create middlewares like this:
+
+// const logger = (req, res, next) => {
+//   console.log(`Router middleware: ${req.method} ${req.url}`);
+//   next();
+// };
+
+// adminRouter.use(logger)
+
+// Route
+adminRouter.get("/dashboard", (req, res) => {
+  res.send("Dashboard");
+});
+
+// Mount the router at /admin/dashboard
+app.use("/admin", adminRouter);
+```
+
+#### Error handling middleware
+
+These middleware functions take four arguments instead of three (err, req, res, next) and are used to handle errors that occur during the execution of previous middleware functions.
+
+```javascript
+// middleware function 1
+app.use((req, res, next) => {
+  throw new Error("This is a Test error");
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.message);
+  res.status(500).send("Error: " + err.message);
+});
+
+// Route
+app.get("/", (req, res) => {
+  res.send("This is home page get method");
+});
+```
+
+#### Third party middleware
+
+Cokkie parser is a third party middleware.
+
+```
+npm i cookie-parser
+```
+
+```js
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+```
+
+### Configurable middleware
+
+## Router
