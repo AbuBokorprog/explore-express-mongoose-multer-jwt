@@ -392,3 +392,407 @@ app.use(cookieParser());
 ### Configurable middleware
 
 ## Router
+
+### router.all()
+
+This method handles all HTTP methods for a given route.
+
+```js
+const express = require("express");
+const router = express.Router();
+
+router.all("/users", (req, res, next) => {
+  console.log("Accessing users...");
+  next(); // Pass control to the next handler
+});
+
+// Handles all HTTP methods (GET, POST, PUT, DELETE) for '/users' route
+router.all("/users", (req, res) => {
+  res.send("All users data");
+});
+```
+
+### router.METHOD()
+
+Shorthand methods for different HTTP methods (GET, POST, PUT, DELETE, etc.).
+
+```js
+router.get("/users", (req, res) => {
+  res.send("GET: List of users");
+});
+
+router.post("/users", (req, res) => {
+  res.send("POST: Create new user");
+});
+
+router.put("/users/:id", (req, res) => {
+  res.send(`PUT: Update user with ID ${req.params.id}`);
+});
+
+router.delete("/users/:id", (req, res) => {
+  res.send(`DELETE: Delete user with ID ${req.params.id}`);
+});
+```
+
+### router.route()
+
+```js
+router
+  .route("/users")
+  .get((req, res) => {
+    res.send("GET: List of users");
+  })
+  .post((req, res) => {
+    res.send("POST: Create new user");
+  })
+  .put((req, res) => {
+    res.send(`PUT: Update user with ID ${req.params.id}`);
+  })
+  .delete((req, res) => {
+    res.send(`DELETE: Delete user with ID ${req.params.id}`);
+  });
+```
+
+### router.use()
+
+Mounts middleware functions or sub-routers to a specific path in the router's route stack.
+
+```js
+// Middleware function
+const logMiddleware = (req, res, next) => {
+  console.log("Logging...");
+  next();
+};
+
+// Mount middleware for '/users' route
+router.use("/users", logMiddleware);
+
+// Mount sub-router for '/products' route
+router.use("/products", productRouter);
+```
+
+### router.param()
+
+Defines route parameters for routes within the router.
+
+```js
+// Route parameter middleware
+router.param("id", (req, res, next, id) => {
+  console.log(`ID parameter: ${id}`);
+  next();
+});
+
+// Route using parameter
+router.get("/users/:id", (req, res) => {
+  res.send(`User ID: ${req.params.id}`);
+});
+```
+
+## Error Handling
+
+### For Syncronous Code
+
+```js
+// Global Error
+app.use(err, req, res, next) => {
+  if(err.message){
+    res.status(500).send(err.message);
+  }else{
+    res.send("There was an error")
+  }
+};
+```
+
+#### not found error:
+
+```js
+// not found error, global error doesn't catch it.
+app.use(req, res, next) => {
+  res.status(404).send("Request url is not found")
+}
+// We can also send error in Next function
+next("Request url is not found");
+// The error goig to global error
+```
+
+#### headerSent
+
+```js
+app.use((req, res, next) => {
+  if (res.headersSent) {
+    next("There was an problem");
+  } else {
+    if (err.message) {
+      res.status(500).send(err.message);
+    } else {
+      res.send("There was an error!");
+    }
+  }
+});
+```
+
+### For Asyncronous Code
+
+## Multer
+
+Multer is a node.js middleware for handling multipart/form-data, which is primarily used for uploading files. It is written on top of busboy for maximum efficiency.
+
+### Installation
+
+```
+ npm install --save multer
+```
+
+```
+ yarn add --save multer
+```
+
+### Basic usage example:
+
+Don't forget the enctype="multipart/form-data" in your form.
+
+```html
+<form action="/profile" method="post" enctype="multipart/form-data">
+  <input type="file" name="avatar" />
+</form>
+```
+
+```js
+const express = require("express");
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
+
+const app = express();
+
+app.post("/profile", upload.single("avatar"), function (req, res, next) {
+  // req.file is the `avatar` file
+  // req.body will hold the text fields, if there were any
+});
+
+app.post(
+  "/photos/upload",
+  upload.array("photos", 12),
+  function (req, res, next) {
+    // req.files is array of `photos` files
+    // req.body will contain the text fields, if there were any
+  }
+);
+
+const cpUpload = upload.fields([
+  { name: "avatar", maxCount: 1 },
+  { name: "gallery", maxCount: 8 },
+]);
+app.post("/cool-profile", cpUpload, function (req, res, next) {
+  // req.files is an object (String -> Array) where fieldname is the key, and the value is array of files
+  //
+  // e.g.
+  //  req.files['avatar'][0] -> File
+  //  req.files['gallery'] -> Array
+  //
+  // req.body will contain the text fields, if there were any
+});
+```
+
+### .single(fieldname)
+
+Accept a single file with the name fieldname. The single file will be stored in req.file.
+
+<!-- Single file upload -->
+
+```html
+<form action="/profile" method="post" enctype="multipart/form-data">
+  <input type="file" name="avatar" />
+</form>
+```
+
+```js
+const multer = require("multer");
+
+// prepare the final multer upload object
+// dest = upload file path
+const upload = multer({ dest: "uploads/" });
+
+// Only one file upload
+app.post("/profile", upload.single("avatar"), function (req, res, next) {
+  // req.file is the `avatar` file
+  // req.body will hold the text fields, if there were any
+});
+```
+
+### .array(fieldname[, maxCount])
+
+Accept an array of files, all with the name fieldname. Optionally error out if more than maxCount files are uploaded. The array of files will be stored in req.files.
+
+<!-- Multiple file upload -->
+
+```html
+<form action="/profile" method="post" enctype="multipart/form-data">
+  <input type="file" name="avatar" multiple />
+</form>
+```
+
+```js
+const multer = require("multer");
+
+// prepare the final multer upload object
+// dest = upload file path
+const upload = multer({ dest: "uploads/" });
+
+// upload multiple files
+// upload.array() accepts 2 parameters
+// 1st is name of the uploaded input name and 2nd is the maximum how many files upload.
+
+app.post(
+  "/photos/upload",
+  upload.array("photos", 3),
+  function (req, res, next) {
+    // req.files is array of `photos` files
+    // req.body will contain the text fields, if there were any
+  }
+);
+```
+
+### .fields(fields)
+
+Accept a mix of files, specified by fields. An object with arrays of files will be stored in req.files.
+
+fields should be an array of objects with name and optionally a maxCount. Example:
+
+```
+[
+  { name: 'avatar', maxCount: 1 },
+  { name: 'gallery', maxCount: 8 }
+]
+```
+
+<!-- Multiple file input and multiple upload -->
+
+```html
+<form action="/profile" method="post" enctype="multipart/form-data">
+  <input type="file" name="avatar" multiple />
+  <input type="file" name="gallery" multiple />
+</form>
+```
+
+```js
+//  upload.fields([
+//     { name: "avatar", maxCount: 3 },
+//     { name: "gallery", maxCount: 2 },
+//   ]),
+app.post(
+  "/photos/upload",
+  upload.fields([
+    { name: "avatar", maxCount: 3 },
+    { name: "gallery", maxCount: 2 },
+  ]),
+  function (req, res, next) {
+    // req.files is array of `photos` files
+    // req.body will contain the text fields, if there were any
+  }
+);
+```
+
+### .none()
+
+Accept only text fields. If any file upload is made, error with code "LIMIT_UNEXPECTED_FILE" will be issued.
+
+### limits
+
+An object specifying the size limits of the following optional properties. Multer passes this object into busboy directly, and the details of the properties can be found on busboy's page.
+
+The following integer values are available:
+
+Key Description Default
+
+- _fieldNameSize_ Max field name size 100 bytes
+- _fieldSize_ Max field value size (in bytes) 1MB
+- _fields_ Max number of non-file fields Infinity
+- _fileSize_ For multipart forms, the max file size (in bytes) Infinity
+- _files_ For multipart forms, the max number of file fields Infinity
+- _parts_ For multipart forms, the max number of parts (fields + files) Infinity
+- _headerPairs_ For multipart forms, the max number of header key=>value pairs to parse 2000
+  Specifying the limits can help protect your site against denial of service (DoS) attacks.
+
+### fileFilter
+
+Set this to a function to control which files should be uploaded and which should be skipped. The function should look like this:
+
+```js
+function fileFilter(req, file, cb) {
+  // The function should call `cb` with a boolean
+  // to indicate if the file should be accepted
+
+  // To reject this file pass `false`, like so:
+  cb(null, false);
+
+  // To accept the file pass `true`, like so:
+  cb(null, true);
+
+  // You can always pass an error if something goes wrong:
+  cb(new Error("I don't have a clue!"));
+}
+```
+
+_For better understanding_
+
+```js
+const upload = multer({
+  dest: "uploads/",
+  limits: {
+    fileSize: 10000,
+  },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimeType === "image/png" ||
+      file.mimeType === "image/jpg" ||
+      file.mimeType === "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only jpg, png and jpeg file allowed!"), false);
+    }
+  },
+});
+```
+
+### Multer Error Handling
+
+```js
+app.use((err, req, res, next) => {
+  if (err) {
+    if (err instanceof multer.MulterError) {
+      res.status(500).send("There was an upload error");
+    } else {
+      res.status(500).send(err.message);
+    }
+  } else {
+    res.send("success");
+  }
+});
+```
+
+### storage
+
+#### DiskStorage
+
+The disk storage engine gives you full control on storing files to disk.
+
+```js
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  fileName: (req, file, cb) => {
+    const fileExt = path.extname(file.originalname);
+    const fileName =
+      file.originalname
+        .replace(fileExt, "")
+        .tolowerCase()
+        .split(" ")
+        .join("-") + Date.now();
+    cb(null, fileName + fileExt);
+  },
+});
+
+const upload = multer({ storage: storage });
+```
