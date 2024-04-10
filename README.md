@@ -533,7 +533,7 @@ app.use((req, res, next) => {
 
 ### For Asyncronous Code
 
-## Multer
+# Multer
 
 Multer is a node.js middleware for handling multipart/form-data, which is primarily used for uploading files. It is written on top of busboy for maximum efficiency.
 
@@ -796,3 +796,145 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 ```
+
+# mongooose
+
+## Why Mongoose?
+
+- abstraction raw level MongoDB.
+- Relationship between NoSQL data.
+- Provides Schema Validation.
+- Object-Data Mapping-translation of data into object that our code understands and vice versa.
+- ~40-60% less code compared to raw MongoDB package.
+
+## Installation
+
+```
+npm i mongoose
+```
+
+OR
+
+```
+yarn add mongoose
+```
+
+### Connection
+
+<!-- Local database -->
+
+```js
+//database connection with mongoose ur/ connection string
+const mongoose = require("mongoose");
+mongoose
+  .connect("mongodb: //localhost/{name}", {
+    UseNewUrlParser: true,
+    UseUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("connection succesfull");
+  })
+  .catch((err) => console.log(err));
+```
+
+<!-- MongoDB Atlas -->
+
+```js
+const mongoose = require("mongoose");
+const uri = `mongodb+srv://${process.env.S3_BUCKET}:${process.env.SECRET_KEY}@cluster0.kq57d4a.mongodb.net/centerStone?retryWrites=true&w=majority`;
+
+mongoose
+  .connect(uri)
+  .then(() => {
+    console.log("connected successfully");
+    app.listen(port, () => {
+      console.log(`http://localhost:${port}`);
+    });
+  })
+  .catch((err) => console.log(err));
+```
+
+## Schema Model
+
+স্কিমা হল একটি ব্লুপ্রিন্ট যা ডকুমেন্টের ধরন নির্ধারণ করে যেটা মঙ্গুসে একটি মংগোডিবি কালেকশনের মধ্যে থাকে। এটি ফিল্ডগুলির স্ট্রাকচার, তাদের ডেটা টাইপ, ডিফল্ট মান, ভ্যালিডেশন নিয়ম, এবং অন্যান্য সীমাবদ্ধতা নির্ধারণ করে। স্কিমা দিয়ে ডেটা সংগ্রহে নিয়মকারীতা এবং অবিচ্ছিন্নতা নিশ্চিত করা হয়।
+
+a schema is a blueprint that defines the structure of documents within a MongoDB collection. It specifies the fields, their data types, default values, validation rules, and other constraints for documents in the collection. Schemas provide a way to enforce data consistency and integrity within a MongoDB database.
+
+Here's an example of defining a schema in Mongoose:
+
+```js
+const mongoose = require("mongoose");
+
+// Define a schema for a user document
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true, // Name is required
+  },
+  email: {
+    type: String,
+    required: true, // Email is required
+    unique: true, // Email must be unique
+    lowercase: true, // Convert email to lowercase
+    trim: true, // Trim whitespace from email
+  },
+  age: {
+    type: Number,
+    default: 18, // Default age is 18
+  },
+  role: {
+    type: String,
+    enum: ["admin", "user"], // Role must be 'admin' or 'user'
+    default: "user",
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now, // Default createdAt timestamp
+  },
+});
+
+// Create a model based on the schema
+const User = mongoose.model("User", userSchema);
+
+module.exports = User;
+```
+
+- _name_, _email_, _age_, _role_, and _createdAt_ are fields of the schema.
+- _type_ specifies the data type for each field (String, Number, Date, etc.).
+- _required_ indicates whether a field is mandatory.
+- _unique_ ensures that each value in the field is unique across the collection.
+- _default_ provides a default value for the field if not specified. -_enum_ specifies a set of allowed values for the field.
+- _lowercase_ and trim are options for string fields to perform operations on the data.
+
+Types of schema options and their usage:
+
+- _Type Options_: Define the data type of each field (String, Number, Date, Boolean, etc.).
+- _Validation Options_: Define validation rules for fields (required, min, max, enum, validate, etc.).
+- _Default Values_: Specify default values for fields (default).
+- _Indexing Options_: Define indexes on fields (index, unique, sparse, etc.).
+- _Getter/Setter Functions_: Define custom getter/setter functions for fields (get, set).
+- _Virtuals_: Define virtual properties that are not stored in MongoDB (virtual).
+- _Hooks_: Define pre and post hooks for document lifecycle events (pre, post).
+- _Options_: Define various schema-level options (strict, collection, timestamps, etc.).
+
+## CRUD Operations
+
+In Mongoose, CRUD (Create, Read, Update, Delete) operations are performed on MongoDB documents using Mongoose models. Here's how to use CRUD methods in Mongoose:
+
+### Read (Retrieve) Documents:(GET)
+
+To retrieve documents from a MongoDB collection using Mongoose, you can use methods like find(), findOne(), or findById().
+
+### Create (Insert) Documents:(POST)
+
+To create new documents in a MongoDB collection using Mongoose, you typically create instances of Mongoose models and save them to the database.
+
+To retrieve documents from a MongoDB collection using Mongoose, you can use methods like find(), findOne(), or findById().
+
+### Update Documents:(PUT)
+
+To update documents in a MongoDB collection using Mongoose, you can use methods like updateOne(), updateMany(), or findOneAndUpdate().
+
+### Delete Documents:(DELETE)
+
+To delete documents from a MongoDB collection using Mongoose, you can use methods like deleteOne(), deleteMany(), or findOneAndDelete().DELETE
