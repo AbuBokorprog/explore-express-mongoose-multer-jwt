@@ -925,16 +925,347 @@ In Mongoose, CRUD (Create, Read, Update, Delete) operations are performed on Mon
 
 To retrieve documents from a MongoDB collection using Mongoose, you can use methods like find(), findOne(), or findById().
 
+#### find()
+
+```js
+router.get("/users", async (req, res) => {
+  try {
+    const user = await User.find();
+    res.status(200).json(user);
+  } catch (err) {
+    console.error(err); // Log the error
+    res.status(500).json({
+      error: "There was an error in server-side",
+    });
+  }
+});
+```
+
+<!-- We can also select that which data filed I want to get whether I don't want -->
+
+```js
+router.get("/users", async (req, res) => {
+  const user = await User.find()
+    .select({
+      _id: 0,
+      _v: 0,
+      date: 0,
+    })
+    .exec((err, data) => {
+      if (err) {
+        res.status(500).json({
+          error: "There was a server-side error!",
+        });
+      } else {
+        res.status(200).json({
+          result: data,
+          message: "Todo was get successfully!",
+        });
+      }
+    });
+});
+```
+
+#### findOne()
+
+```js
+// filter and get
+router.get("/:id", async (req, res) => {
+  const id = req.params;
+  await todo.findOne({ _id: id }, (err, data) => {
+    if (err) {
+      res.status(500).json({
+        error: "There was a server-side error!",
+      });
+    } else {
+      res.status(200).json({
+        result: data,
+        message: "Todo was get successfully!",
+      });
+    }
+  });
+});
+```
+
+#### findById()
+
+```js
+// filter and get
+router.get('/:id', async(req, res) => {
+  const id = req.params;
+	awit todo.findById({id}, (err, data) => {
+				if(err){
+				res.status(500).json({
+				error: "There was a server-side error!",
+			})
+		} else {
+				res.status(200).json({
+				result: data,
+				message: "Todo was get successfully!",
+			})
+		}
+	})
+});
+
+```
+
+#### Other like select, limit and exec
+
+```js
+// ---Other like select, limit and exec
+router.get('/', (req, res) => {
+	todo.find({status: 'active'})
+.select({
+				_id = 0,
+				date = 0,
+			})
+.limit(2).select({
+      _id: 0,
+      _v: 0,
+      date: 0,
+    })
+.exec((err, data) => {
+				if(err){
+				  res.status(500).json({
+				    error: "There was a server-side error!",
+			    })
+		    } else {
+				  res.status(200).json({
+				  result: data,
+				  message: "Todo was get successfully!",
+			  })
+			}
+		}
+  )
+})
+```
+
 ### Create (Insert) Documents:(POST)
 
 To create new documents in a MongoDB collection using Mongoose, you typically create instances of Mongoose models and save them to the database.
 
-To retrieve documents from a MongoDB collection using Mongoose, you can use methods like find(), findOne(), or findById().
+<!-- Post single data -->
+
+```js
+router.post("/jewelry", async (req, res) => {
+  const newJewelry = new Jewelry(req.body);
+  const savedJewelry = await newJewelry.save((err) => {
+    if (err) {
+      res.status(500).json({ Error: err.message });
+    } else {
+      res
+        .status(200)
+        .json({ message: "Successfully saved", data: savedjewelry });
+    }
+  });
+});
+```
+
+OR
+
+```js
+router.post("/jewelry", async (req, res) => {
+  try {
+    const newJewelry = new Jewelry(req.body);
+    const savedJewelry = await newJewelry.save();
+
+    res.status(200).json({ message: "Success", data: savedJewelry });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Server side error" });
+  }
+});
+```
+
+<!-- post Multiple Data -->
+
+```js
+//POST MULTIPLE TODO
+router.post("/all", async (req, res) => {
+  await Todo.insertMany(req.body, (error) => {
+    if (err) {
+      res.status(500).json({
+        error: err.message,
+      });
+    } else {
+      res.status(200).json({
+        message: "Todos were inserted successfully!",
+      });
+    }
+  });
+});
+```
 
 ### Update Documents:(PUT)
 
 To update documents in a MongoDB collection using Mongoose, you can use methods like updateOne(), updateMany(), or findOneAndUpdate().
 
+#### updateOne()
+
+```js
+router.put("/:id", async (req, res) => {
+  await todo.updateOne(
+    { _id: req.params.id },
+    {
+      $set: {
+        status: "active",
+      },
+    },
+    (err) => {
+      if (err) {
+        res.status(500).json({
+          error: "There was a server-side error!",
+        });
+      } else {
+        res.status(200).json({
+          message: "Todo was updated successfully!",
+        });
+      }
+    }
+  );
+});
+```
+
+#### updateMany()
+
+```js
+router.put("/:id", async (req, res) => {
+  await todo.updateMany(
+    { _id: req.params.id },
+    {
+      status: "active",
+    },
+    (err) => {
+      if (err) {
+        res.status(500).json({
+          error: "There was a server-side error!",
+        });
+      } else {
+        res.status(200).json({
+          message: "Todo was updated successfully!",
+        });
+      }
+    }
+  );
+});
+```
+
+#### findByIdAndUpdate()
+
+```js
+router.put("/:id", async (req, res) => {
+  await todo.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      status: "active",
+    },
+    {
+      new: true,
+      useFindAndModify: false,
+    },
+    (err) => {
+      if (err) {
+        res.status(500).json({
+          error: "There was a server-side error!",
+        });
+      } else {
+        res.status(200).json({
+          message: "Todo was updated successfully!",
+        });
+      }
+    }
+  );
+});
+```
+
+#### findOneAndUpdate()
+
+```js
+router.put("/:id", async (req, res) => {
+  const result = await todo.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      status: "active",
+    },
+    {
+      new: true, //because i want to log modified data
+      useFindAndModify: false,
+    },
+    (err) => {
+      if (err) {
+        res.status(500).json({
+          error: "There was a server-side error!",
+        });
+      } else {
+        res.status(200).json({
+          message: "Todo was updated successfully!",
+        });
+      }
+    }
+  );
+});
+```
+
 ### Delete Documents:(DELETE)
 
 To delete documents from a MongoDB collection using Mongoose, you can use methods like deleteOne(), deleteMany(), or findOneAndDelete().DELETE
+
+#### DeleteOne()
+
+```js
+router.delete("/:id", async (req, res) => {
+  await todo.deleteOne({ _id: req.params.id }, (err) => {
+    if (err) {
+      res.status(500).json({
+        error: "There was a server-side error!",
+      });
+    } else {
+      res.status(200).json({
+        message: "Todo was Deleted successfully!",
+      });
+    }
+  });
+});
+```
+
+#### DeleteMany()
+
+```js
+// Delete all users with age less than 30
+router.delete("/:id", async (req, res) => {
+  await todo.deleteMany({ age: { $lt: 30 } }, (err) => {
+    if (err) {
+      res.status(500).json({
+        error: "There was a server-side error!",
+      });
+    } else {
+      res.status(200).json({
+        message: "Todo was Deleted successfully!",
+      });
+    }
+  });
+});
+```
+
+#### findOneAndDelete()
+
+```js
+// Delete all users with age less than 30
+router.delete("/:id", async (req, res) => {
+  await todo.findOneAndDelete({ _id: req.params.id }, (err) => {
+    if (err) {
+      res.status(500).json({
+        error: "There was a server-side error!",
+      });
+    } else {
+      res.status(200).json({
+        message: "Todo was Deleted successfully!",
+      });
+    }
+  });
+});
+```
+
+_Note_ : For more details about CRUD operations see the documentation of the mongoose.
+
+# JWT(jsonwebtoken)
