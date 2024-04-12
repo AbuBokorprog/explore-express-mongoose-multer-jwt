@@ -927,6 +927,8 @@ To retrieve documents from a MongoDB collection using Mongoose, you can use meth
 
 #### find()
 
+<!-- Async await -->
+
 ```js
 router.get("/users", async (req, res) => {
   try {
@@ -941,11 +943,31 @@ router.get("/users", async (req, res) => {
 });
 ```
 
-<!-- We can also select that which data filed I want to get whether I don't want -->
+<!-- Callback  -->
 
 ```js
-router.get("/users", async (req, res) => {
-  const user = await User.find()
+router.get("/users", (req, res) => {
+  const user = User.find((err, data) => {
+    if (err) {
+      res.status(500).json({
+        error: "There was an error in server-side",
+      });
+    } else {
+      res.status(200).json({
+        message: "Successfully",
+      });
+    }
+  });
+});
+```
+
+<!-- We can also select that which data filed I want to get whether I don't want -->
+
+<!-- Callback -->
+
+```js
+router.get("/users", (req, res) => {
+  const user = User.find()
     .select({
       _id: 0,
       _v: 0,
@@ -966,13 +988,35 @@ router.get("/users", async (req, res) => {
 });
 ```
 
+<!-- Async Await -->
+
+```js
+router.get("/users", async (req, res) => {
+  try {
+    const user = await User.find().select({
+      _id: 0,
+      _v: 0,
+      date: 0,
+    });
+    res.status(200).json({
+      result: data,
+      message: "Todo was get successfully!",
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: "There was a server-side error!",
+    });
+  }
+});
+```
+
 #### findOne()
 
 ```js
 // filter and get
-router.get("/:id", async (req, res) => {
+router.get("/:id", (req, res) => {
   const id = req.params;
-  await todo.findOne({ _id: id }, (err, data) => {
+  todo.findOne({ _id: id }, (err, data) => {
     if (err) {
       res.status(500).json({
         error: "There was a server-side error!",
@@ -991,22 +1035,21 @@ router.get("/:id", async (req, res) => {
 
 ```js
 // filter and get
-router.get('/:id', async(req, res) => {
+router.get("/:id", (req, res) => {
   const id = req.params;
-	awit todo.findById({id}, (err, data) => {
-				if(err){
-				res.status(500).json({
-				error: "There was a server-side error!",
-			})
-		} else {
-				res.status(200).json({
-				result: data,
-				message: "Todo was get successfully!",
-			})
-		}
-	})
+  todo.findById({ id }, (err, data) => {
+    if (err) {
+      res.status(500).json({
+        error: "There was a server-side error!",
+      });
+    } else {
+      res.status(200).json({
+        result: data,
+        message: "Todo was get successfully!",
+      });
+    }
+  });
 });
-
 ```
 
 #### Other like select, limit and exec
@@ -1047,9 +1090,10 @@ To create new documents in a MongoDB collection using Mongoose, you typically cr
 <!-- Post single data -->
 
 ```js
-router.post("/jewelry", async (req, res) => {
+// callback: function
+router.post("/jewelry", (req, res) => {
   const newJewelry = new Jewelry(req.body);
-  const savedJewelry = await newJewelry.save((err) => {
+  const savedJewelry = newJewelry.save((err) => {
     if (err) {
       res.status(500).json({ Error: err.message });
     } else {
@@ -1064,6 +1108,7 @@ router.post("/jewelry", async (req, res) => {
 OR
 
 ```js
+// async await
 router.post("/jewelry", async (req, res) => {
   try {
     const newJewelry = new Jewelry(req.body);
@@ -1081,8 +1126,8 @@ router.post("/jewelry", async (req, res) => {
 
 ```js
 //POST MULTIPLE TODO
-router.post("/all", async (req, res) => {
-  await Todo.insertMany(req.body, (error) => {
+router.post("/all", (req, res) => {
+  Todo.insertMany(req.body, (error) => {
     if (err) {
       res.status(500).json({
         error: err.message,
@@ -1103,8 +1148,8 @@ To update documents in a MongoDB collection using Mongoose, you can use methods 
 #### updateOne()
 
 ```js
-router.put("/:id", async (req, res) => {
-  await todo.updateOne(
+router.put("/:id", (req, res) => {
+  todo.updateOne(
     { _id: req.params.id },
     {
       $set: {
@@ -1129,8 +1174,8 @@ router.put("/:id", async (req, res) => {
 #### updateMany()
 
 ```js
-router.put("/:id", async (req, res) => {
-  await todo.updateMany(
+router.put("/:id", (req, res) => {
+  todo.updateMany(
     { _id: req.params.id },
     {
       status: "active",
@@ -1153,8 +1198,8 @@ router.put("/:id", async (req, res) => {
 #### findByIdAndUpdate()
 
 ```js
-router.put("/:id", async (req, res) => {
-  await todo.findByIdAndUpdate(
+router.put("/:id", (req, res) => {
+  todo.findByIdAndUpdate(
     { _id: req.params.id },
     {
       status: "active",
@@ -1181,8 +1226,8 @@ router.put("/:id", async (req, res) => {
 #### findOneAndUpdate()
 
 ```js
-router.put("/:id", async (req, res) => {
-  const result = await todo.findByIdAndUpdate(
+router.put("/:id", (req, res) => {
+  const result = todo.findByIdAndUpdate(
     { _id: req.params.id },
     {
       status: "active",
@@ -1213,8 +1258,8 @@ To delete documents from a MongoDB collection using Mongoose, you can use method
 #### DeleteOne()
 
 ```js
-router.delete("/:id", async (req, res) => {
-  await todo.deleteOne({ _id: req.params.id }, (err) => {
+router.delete("/:id", (req, res) => {
+  todo.deleteOne({ _id: req.params.id }, (err) => {
     if (err) {
       res.status(500).json({
         error: "There was a server-side error!",
@@ -1232,8 +1277,8 @@ router.delete("/:id", async (req, res) => {
 
 ```js
 // Delete all users with age less than 30
-router.delete("/:id", async (req, res) => {
-  await todo.deleteMany({ age: { $lt: 30 } }, (err) => {
+router.delete("/:id", (req, res) => {
+  todo.deleteMany({ age: { $lt: 30 } }, (err) => {
     if (err) {
       res.status(500).json({
         error: "There was a server-side error!",
@@ -1251,8 +1296,8 @@ router.delete("/:id", async (req, res) => {
 
 ```js
 // Delete all users with age less than 30
-router.delete("/:id", async (req, res) => {
-  await todo.findOneAndDelete({ _id: req.params.id }, (err) => {
+router.delete("/:id", (req, res) => {
+  todo.findOneAndDelete({ _id: req.params.id }, (err, data) => {
     if (err) {
       res.status(500).json({
         error: "There was a server-side error!",
@@ -1268,4 +1313,138 @@ router.delete("/:id", async (req, res) => {
 
 _Note_ : For more details about CRUD operations see the documentation of the mongoose.
 
+## Instance
+
+```js
+TodoSchema.instance = {
+  // async await
+  findActive: function () {
+    return mongoose.model("Todo").find({ active: status });
+  },
+  // callback
+  findActive: function (cb) {
+    return mongoose.model("Todo").find({ active: status }, cb);
+  },
+};
+```
+
+## static
+
+```js
+TodoSchema.static = {
+  // async await
+  findByJS: function () {
+    return this.find({ title: /js/i });
+  },
+};
+```
+
+## Query helpers
+
+```js
+TodoSchema.Query = {
+  // async await
+  findByLangauage: function (language) {
+    return this.find({ title: new RegExp(language, "i") });
+  },
+};
+```
+
+# bcrypt
+
+## Installation
+
+```
+npm i bcrypt
+```
+
+## Implementations
+
+Step1: import bcrypt
+
+Step2: hashing password
+
+Step3: Compare password
+
+```js
+const bcrypt = require("bcrypt");
+
+const hashedPassword = await bcrypt.hashSync(req.body.password, 10);
+const newUser = new User({
+  name: req.body.name,
+  email: req.body.email,
+  password: hashedPassword,
+});
+
+const validPassword = await bcrypt.compare(req.body.password, hashedPassword);
+
+if (validPassword) {
+  const token = jwt.sign(
+    {
+      name: req.body.name,
+      email: req.body.email,
+      id: req.body.id,
+    },
+    process.env.TOKEN,
+    {
+      expiresIn: "2h",
+    }
+  );
+  res.status(200).send({
+    token,
+    message: "login successful",
+  });
+} else {
+  res.status(403).json("Authentication failed");
+}
+```
+
+<!-- middleware -->
+
+```js
+const checkLogin = async (req, res, next) => {
+  const { authorization } = req.headers;
+  try {
+    const token = authorization.split(" ")[1];
+    const decoded = JWT.verify(token, process.env.TOKEN);
+    const { name, email, id } = decoded;
+    req.name = name;
+    req.email = email;
+    next();
+  } catch (err) {
+    next("authentication failed");
+  }
+};
+
+// milldeware have to exports
+```
+
 # JWT(jsonwebtoken)
+
+## Installation
+
+```
+npm i jsonwebtoken
+```
+
+## Implementation
+
+Step 1: require the `jsonwebtoken
+step 2: Sign the request. In The Sign 1st I have to give payload like which information I want to give and 2nd is encrypted token.
+step 3: Give Options. For Example After 2 hours of login token Will be expired
+
+```js
+const jwt = require("jsonwebtoken");
+
+const token = jwt.sign(
+  {
+    name: req.body.name,
+    email: req.body.email,
+    id: req.body.id,
+  },
+  process.env.TOKEN,
+  {
+    expiresIn: "2h",
+  }
+);
+```
