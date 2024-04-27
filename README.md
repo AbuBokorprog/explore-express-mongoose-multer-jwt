@@ -1429,22 +1429,74 @@ npm i jsonwebtoken
 
 ## Implementation
 
-Step 1: require the `jsonwebtoken
-step 2: Sign the request. In The Sign 1st I have to give payload like which information I want to give and 2nd is encrypted token.
-step 3: Give Options. For Example After 2 hours of login token Will be expired
+Step 1: Install & require the jsonwebtoken.
+step 2: Sign the request. In The Sign 1st I have to give payload like which information I want to give and 2nd is encrypted token. Give Options. For Example After 2 hours of login token Will be expired
+step 3: Set up cookie parser & set token in the cookie.
+step 4: setup Cors.
+step 5: fetch with credentials
+step 6: middleware
+step 7: jwt.verify token
 
 ```js
+//import jwt
 const jwt = require("jsonwebtoken");
 
-const token = jwt.sign(
-  {
-    name: req.body.name,
-    email: req.body.email,
-    id: req.body.id,
-  },
-  process.env.TOKEN,
-  {
-    expiresIn: "2h",
-  }
+// cors setup
+
+app.use(
+  cors({
+    region: ["domain or localhost name"],
+    credentials: true,
+  })
 );
+
+//set up cookie parser.
+const cookies = require("cookie-parser");
+
+app.use(cookies());
+
+// jwt route
+app.use("/jwt", (req, res) => {
+  const token = jwt.sign(
+    {
+      name: req.body.name,
+      email: req.body.email,
+      id: req.body.id,
+    },
+    process.env.TOKEN,
+    {
+      expiresIn: "2h",
+    }
+  );
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: false, // secure false for locahost but for production secure true
+    // have multiple option to secure the cookie
+  });
+});
+```
+
+<!-- middleware -->
+
+```javascript
+const verifyToken = async(req, res, next){
+  const token = req.cookies?.token;
+  if(!token){
+    res.status(401).send({ message: 'unauthorized' });
+  }
+  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    if(err){
+      res.status(401).send({ message: 'unauthorized' });
+    }
+    // req.user = decoded; set docoded in the request body
+    next();
+  })
+}
+
+
+app.use("/login", verifyToken async (req, res) => {
+  // all these thing of login route
+})
+
 ```
